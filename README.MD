@@ -5,5 +5,5 @@ It creates the "users" folder which is where the users' information would be sto
 So either run "./server.sh" or manually create an empty "users" folder in here.
 
 # Developers
-Van-Mario Caval, 21441846
-Patriks Briedis, 22323276
+Van-Mario Caval
+Patriks Briedis
