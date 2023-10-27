@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Check if user id was provided
-if [ $# -lt 1 ]; then
+if [ "$1" == "" ]; then
     echo "nok: no identifier provided"
     exit 1
 fi

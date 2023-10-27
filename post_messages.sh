@@ -19,7 +19,7 @@ fi
 
 # Check if the receiver exists
 if ! [[ -d "users/$receiver" ]]; then
-    echo "nok: sender '$receiver' does not exit"
+    echo "nok: sender '$receiver' does not exist"
     exit 1
 fi
 

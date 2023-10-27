@@ -17,38 +17,41 @@ if [ -f "pipes/server.pipe" ]; then
 fi
 
 # Create the server pipe
-touch "pipes/server.pipe"
+server_pipe="pipes/server.pipe"
+touch $server_pipe
 
 # Function to delete the server pipe if interrupted by Ctrl + C
 pipe_delete_on_interrupt() {
     echo
     echo "Exiting script via interrupt"
     rm "pipes/server.pipe"
-    exit 2
+    exit 0
 }
 
 # This line listens for ctrl + c and runs the pipe_delete_on_interrupt function
 trap 'pipe_delete_on_interrupt' SIGINT
 
 while true; do
-    # Read input and split each word into variables
-    read -p "Enter request: " command arg1 arg2 arg3
+    # Read input from server pipe every second
+    read user_id command arg1 arg2 arg3
+    user_pipe="pipes/$user_id.pipe"
 
     # Match the command with the appropriate command
     case $command in
         create)
-            ./create.sh "$arg1"
+            ./create.sh "$arg1" >> $user_pipe
             ;;
         add)
-            ./add_friend.sh "$arg1" "$arg2"
+            ./add_friend.sh "$arg1" "$arg2" >> $user_pipe
             ;;
         post)
-            ./post_messages.sh "$arg1" "$arg2" "$arg3"
+            ./post_messages.sh "$arg1" "$arg2" "$arg3" >> $user_pipe
             ;;
         display)
-            ./display_wall.sh "$arg1"
+            ./display_wall.sh "$arg1" >> $user_pipe
             ;;
         *)
-            echo "Accepted commands: |create|add|post|display"
+            # echo "Accepted commands: |create|add|post|display"
+            sleep 1
     esac
-done
+done < $server_pipe
