@@ -5,6 +5,31 @@ if ! [ -d "users" ]; then
     mkdir "users"
 fi
 
+# Create pipes folder if it does not exist
+if ! [ -d "pipes" ]; then
+    mkdir "pipes"
+fi
+
+# If server.pipe exists, then there is a server currently running
+if [ -f "pipes/server.pipe" ]; then
+    echo "Server is already running"
+    exit 1
+fi
+
+# Create the server pipe
+touch "pipes/server.pipe"
+
+# Function to delete the server pipe if interrupted by Ctrl + C
+pipe_delete_on_interrupt() {
+    echo
+    echo "Exiting script via interrupt"
+    rm "pipes/server.pipe"
+    exit 2
+}
+
+# This line listens for ctrl + c and runs the pipe_delete_on_interrupt function
+trap 'pipe_delete_on_interrupt' SIGINT
+
 while true; do
     # Read input and split each word into variables
     read -p "Enter request: " command arg1 arg2 arg3
