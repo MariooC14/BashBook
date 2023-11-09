@@ -36,8 +36,9 @@ fi
 if ! [ -f "locks/add_$friend.txt" ]; then
     echo lock > "locks/add_$friend.txt"
 fi
-# ./acquire_add.sh $user $friend
 
+# Acquire the locks
+./acquire_add.sh $user $friend
 
 # Check if the user is friends with friend
 # As BashBook forces mutual friendships we only check for one side
@@ -51,4 +52,4 @@ else
 fi
 
 # Release the lock
-# ./release $user $friend
+./release.sh $user $friend

@@ -14,19 +14,31 @@ if [ -z "$0" ] || [ -z "$1" ]; then
     exit 1
 fi
 
+user="$0"
+friend="$1"
+
 # Declare the order in which locks are to be acquired
-if [ "$0" < "$1" ]; then
-    lock1="locks/add_$0.txt"
-    lock2="locks/add_$1.txt"
+if [[ "$user" < "$friend" ]]; then
+    lock1="locks/add_$user.txt"
+    lock2="locks/add_$friend.txt"
 else
-    lock1="locks/add_$1.txt"
-    lock2="locks/add_$0.txt"
+    lock1="locks/add_$friend.txt"
+    lock2="locks/add_$user.txt"
 fi
 
 # Wait to get lock 1
-while ! ln "$0" "$1" 2>/dev/null; do
+while ! ln "$lock1" "$0" 2>/dev/null; do
     sleep 1
 done
+
 # Then wait to get lock 2
+while ! ln "$lock2" "$0" 2>/dev/null; do
+    # Release lock 1 before retrying to avoid deadlock
+    rm -f "$lock1"
+    sleep 1
+    while ! ln "$lock1" "$0" 2>/dev/null; do
+        sleep 1
+    done
+done
 
 exit 0
