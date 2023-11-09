@@ -1,14 +1,10 @@
-# params: client.sh <id>
-# If not id, stop script
-# Check if server.sh is running (server.pipe exists)
-# make sure that the id is not server
-# When this is run, we create a pipe called id.pipe in pipes folder
-# Start listening for commands
+# Script must have an id provided
 if [ $# -lt 1 ]; then 
     echo "ERROR: no id provided"
     exit 1
 fi
 
+# Create variables for user pipe and server pipe
 user_id=$1
 user_pipe="pipes/$user_id.pipe"
 server_pipe="pipes/server.pipe"
@@ -27,10 +23,35 @@ else
     exit 1
 fi
 
-# Check is server is running
+# Check if the server is running
 if ! [ -f $server_pipe ]; then
     echo "Server is currently under maintenance. Please come back later"
     exit 1
+fi
+
+# Check if user exists
+if [ -d "users/$user_id" ]; then
+    echo "Welcome back, $user_id!"
+else
+    # Create user if not exists
+    echo "Creating your account..."
+    echo $user_id create $user_id >> $server_pipe
+
+    # Wait for server response
+    while true; do
+        read response
+        case $response in
+        "ok: user created!")
+            # Delete the server response and display welcome message
+            echo "" > $user_pipe
+            echo "Welcome, $user_id"
+            break
+            ;;
+        *)
+            # Keep waiting
+            sleep 0.1
+        esac
+    done < $user_pipe
 fi
 
 
@@ -40,34 +61,38 @@ delete_pipe_on_interrupt() {
     echo "Exiting"
     rm $user_pipe
     exit 0
+
 }
 
 # Listen for ctrl + c and call the delete user pipe function (see above)
 trap 'delete_pipe_on_interrupt' SIGINT
 
 while true; do
+    # Read input (specifically) from the terminal
+    # This while loop is instructed to read everything from
+    # the user pipe (to read server responses), we are forcing this line to read from the terminal
     read -p "Enter request: " command arg1 arg2 arg3 < /dev/tty
 
+    # Execute the command
+    # We do not allow the create command here.
     case $command in
-        create)
-            echo $user_id $command $arg1 >> $server_pipe
-        ;;
         add)
-            echo $user_id $command $arg1 $arg2 >> $server_pipe
+            echo $user_id $command $user_id $arg1 >> $server_pipe
         ;;
         post)
-            echo $user_id $command $arg1 $arg2 $arg3 >> $server_pipe
+            echo $user_id $command $user_id $arg1 $arg2 >> $server_pipe
         ;;
         display)
-            echo $user_id $command $arg1 >> $server_pipe
+            echo $user_id $command $user_id >> $server_pipe
         ;;
         *)
             echo "Accepted commands: |create|add|post|display"
-            
+            continue    # GO back to start of loop to listen for command
     esac
 
     # Wait for server response
     while true; do
+        # response_message is from user_id.pipe (a line written by the server)
         read response_message
 
         case $response_message in
@@ -112,8 +137,16 @@ while true; do
                 echo "ERROR: user '$arg2' does not exist"
                 break
                 ;;
-            "nok: '$arg2' and '$arg1' are already friends")
-                echo "ERROR: '$arg2' and '$arg1' are already friends"
+            "nok: '$arg1' and '$user_id' are already friends")
+                echo "ERROR: '$arg1' and '$user_id' are already friends"
+                break
+                ;;
+            "nok: Usage: add_friend <user_id> <friend_id>")
+                echo "ERROR: no user id or friend id provided"
+                break
+                ;;
+            "nok: self-friending is not permitted")
+                echo "ERROR: You cannot add yourself as a friend"
                 break
                 ;;
             
@@ -128,7 +161,6 @@ while true; do
                 break
                 ;;
             "start_of_file")
-                # Read header
                 # Keep reading until we reach end_of_file
                 while true; do
                     read wall_line
@@ -139,7 +171,12 @@ while true; do
                 done
                 break
                 ;;
+            "nok: invalid command")
+                echo "Error: Invalid Command"
+                break
+                ;;
             *)
+                # Wait for server to reply.
                 sleep 0.2
         esac
     done 
