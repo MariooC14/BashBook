@@ -71,7 +71,7 @@ while true; do
     # Read input (specifically) from the terminal
     # This while loop is instructed to read everything from
     # the user pipe (to read server responses), we are forcing this line to read from the terminal
-    read -p "Enter request: " command arg1 arg2 arg3 < /dev/tty
+    read -p "Enter request: " command arg1 "arg2" < /dev/tty
 
     # Execute the command
     # We do not allow the create command here.
@@ -111,16 +111,20 @@ while true; do
                 echo "SUCCESS: message posted!"
                 break
                 ;;
-            "nok: sender '$arg1' does not exist")
-                echo "ERROR: sender '$arg1' does not exist"
+            "nok: user '$arg1' does not exist")
+                echo "ERROR: User '$arg1' does not exist"
                 break
                 ;;
-            "nok: sender '$arg2' does not exit")
-                echo "ERROR: sender '$arg2' does not exist"
+            "nok: user '$arg2' does not exit")
+                echo "ERROR: You don't exist"
                 break
                 ;;
-            "nok: user '$arg1' is not a friend of '$arg2'")
-                echo "ERROR: user '$arg1' is not a friend of '$arg2'"
+            "nok: cannot post to own wall")
+                echo "ERROR: You cannot post to your own wall"
+                break
+                ;;
+            "nok: user '$user_id' is not a friend of '$arg1'")
+                echo "ERROR: You are not friends with $arg1"
                 break
                 ;;
 

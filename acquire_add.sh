@@ -9,36 +9,31 @@
 
 # Store the locks locks/add_<id>.txt
 
-if [ -z "$0" ] || [ -z "$1" ]; then
+if [ -z "$1" ] || [ -z "$2" ]; then
     echo "No user id or friend id provided"
     exit 1
 fi
 
-user="$0"
-friend="$1"
+user="$1"
+friend="$2"
 
 # Declare the order in which locks are to be acquired
 if [[ "$user" < "$friend" ]]; then
-    lock1="locks/add_$user.txt"
-    lock2="locks/add_$friend.txt"
+    lock1="locks/add_$user"
+    lock2="locks/add_$friend"
 else
-    lock1="locks/add_$friend.txt"
-    lock2="locks/add_$user.txt"
+    lock1="locks/add_$friend"
+    lock2="locks/add_$user"
 fi
 
 # Wait to get lock 1
-while ! ln "$lock1" "$0" 2>/dev/null; do
-    sleep 1
+while ! ln "$lock1.txt" $lock1 2>/dev/null; do
+    sleep 0.5
 done
 
 # Then wait to get lock 2
-while ! ln "$lock2" "$0" 2>/dev/null; do
-    # Release lock 1 before retrying to avoid deadlock
-    rm -f "$lock1"
-    sleep 1
-    while ! ln "$lock1" "$0" 2>/dev/null; do
-        sleep 1
-    done
+while ! ln "$lock2.txt" $lock2 2>/dev/null; do
+    sleep 0.5
 done
 
 exit 0

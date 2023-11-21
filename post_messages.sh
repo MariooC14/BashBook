@@ -13,13 +13,18 @@ message=$3
 
 # Check if the sender exists
 if ! [[ -d "users/$sender" ]]; then
-    echo "nok: sender '$sender' does not exist"
+    echo "nok: user '$sender' does not exist"
     exit 1
 fi
 
 # Check if the receiver exists
 if ! [[ -d "users/$receiver" ]]; then
-    echo "nok: sender '$receiver' does not exist"
+    echo "nok: user '$receiver' does not exist"
+    exit 1
+fi
+
+if [ $sender == $receiver ]; then
+    echo "nok: cannot post to own wall"
     exit 1
 fi
 

@@ -1,5 +1,5 @@
 # Remove user lock
-rm "locks/add_$0"
+rm "locks/add_$1"
 
 # Remove friend lock
-rm "locks/add_$1"
+rm "locks/add_$2"
